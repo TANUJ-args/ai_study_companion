@@ -15,10 +15,7 @@ def client():
 
 def test_chat_with_empty_message(client):
     """Chat endpoint rejects empty message."""
-    response = client.post(
-        "/chat",
-        json={"message": ""}
-    )
+    response = client.post("/chat", json={"message": ""})
 
     assert response.status_code == 400
     assert "empty" in response.json()["detail"].lower()
@@ -26,20 +23,14 @@ def test_chat_with_empty_message(client):
 
 def test_chat_with_whitespace_only_message(client):
     """Chat endpoint rejects whitespace-only message."""
-    response = client.post(
-        "/chat",
-        json={"message": "   "}
-    )
+    response = client.post("/chat", json={"message": "   "})
 
     assert response.status_code == 400
 
 
 def test_chat_endpoint_validates_json_format(client):
     """Chat endpoint requires valid JSON."""
-    response = client.post(
-        "/chat",
-        json="not-a-valid-json-object"
-    )
+    response = client.post("/chat", json="not-a-valid-json-object")
 
     assert response.status_code == 422
 
@@ -48,11 +39,7 @@ def test_generate_question_with_invalid_count(client):
     """Generate question endpoint requires exactly 2 questions."""
     response = client.post(
         "/generate-question",
-        json={
-            "topic": "Algebra",
-            "difficulty": "medium",
-            "question_count": 5
-        }
+        json={"topic": "Algebra", "difficulty": "medium", "question_count": 5},
     )
 
     assert response.status_code == 422
@@ -62,11 +49,7 @@ def test_generate_question_with_invalid_difficulty(client):
     """Generate question endpoint validates difficulty enum."""
     response = client.post(
         "/generate-question",
-        json={
-            "topic": "Algebra",
-            "difficulty": "impossible",
-            "question_count": 2
-        }
+        json={"topic": "Algebra", "difficulty": "impossible", "question_count": 2},
     )
 
     assert response.status_code == 422
@@ -76,11 +59,7 @@ def test_generate_question_with_empty_topic(client):
     """Generate question endpoint rejects empty topic."""
     response = client.post(
         "/generate-question",
-        json={
-            "topic": "",
-            "difficulty": "medium",
-            "question_count": 2
-        }
+        json={"topic": "", "difficulty": "medium", "question_count": 2},
     )
 
     assert response.status_code == 422
@@ -90,11 +69,7 @@ def test_generate_question_response_structure(client):
     """Generate question response has required fields."""
     response = client.post(
         "/generate-question",
-        json={
-            "topic": "test_topic",
-            "difficulty": "medium",
-            "question_count": 2
-        }
+        json={"topic": "test_topic", "difficulty": "medium", "question_count": 2},
     )
 
     # Note: This will fail if GROQ_API_KEY is not set, which is expected in test environment

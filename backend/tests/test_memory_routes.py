@@ -22,8 +22,8 @@ def test_store_memory_with_valid_payload(client):
             "topic": "Algebra",
             "mistake_type": "Conceptual",
             "difficulty": "Medium",
-            "score": 75
-        }
+            "score": 75,
+        },
     )
 
     # Hindsight client may not be configured; both 200 and 500 are acceptable
@@ -33,11 +33,7 @@ def test_store_memory_with_valid_payload(client):
 def test_store_memory_with_missing_fields(client):
     """Store memory rejects incomplete payload."""
     response = client.post(
-        "/store-memory",
-        json={
-            "user_id": "user1",
-            "topic": "Algebra"
-        }
+        "/store-memory", json={"user_id": "user1", "topic": "Algebra"}
     )
 
     assert response.status_code == 400
@@ -53,8 +49,8 @@ def test_store_memory_with_invalid_score(client):
             "topic": "Algebra",
             "mistake_type": "Conceptual",
             "difficulty": "Medium",
-            "score": 150  # Invalid: > 100
-        }
+            "score": 150,  # Invalid: > 100
+        },
     )
 
     assert response.status_code == 400
@@ -72,16 +68,16 @@ def test_store_memory_batch_with_valid_payload(client):
                     "topic": "Algebra",
                     "mistake_type": "Conceptual",
                     "difficulty": "Medium",
-                    "score": 75
+                    "score": 75,
                 },
                 {
                     "topic": "Geometry",
                     "mistake_type": "Calculation",
                     "difficulty": "Hard",
-                    "score": 60
-                }
-            ]
-        }
+                    "score": 60,
+                },
+            ],
+        },
     )
 
     # Both 200 and 500 acceptable depending on Hindsight config
@@ -99,10 +95,10 @@ def test_store_memory_batch_with_wrong_count(client):
                     "topic": "Algebra",
                     "mistake_type": "Conceptual",
                     "difficulty": "Medium",
-                    "score": 75
+                    "score": 75,
                 }
-            ]
-        }
+            ],
+        },
     )
 
     assert response.status_code == 422

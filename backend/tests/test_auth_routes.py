@@ -17,8 +17,7 @@ def client():
 def test_login_with_valid_credentials(client):
     """Login endpoint returns valid JWT token."""
     response = client.post(
-        "/login",
-        data={"username": "user1", "password": "password123"}
+        "/login", data={"username": "user1", "password": "password123"}
     )
 
     assert response.status_code == 200
@@ -29,10 +28,7 @@ def test_login_with_valid_credentials(client):
 
 def test_login_with_invalid_password(client):
     """Login with wrong password returns 401."""
-    response = client.post(
-        "/login",
-        data={"username": "user1", "password": "wrong"}
-    )
+    response = client.post("/login", data={"username": "user1", "password": "wrong"})
 
     assert response.status_code == 401
     assert "Incorrect" in response.json()["detail"]
@@ -41,8 +37,7 @@ def test_login_with_invalid_password(client):
 def test_login_with_nonexistent_user(client):
     """Login with nonexistent username returns 401."""
     response = client.post(
-        "/login",
-        data={"username": "nonexistent", "password": "password"}
+        "/login", data={"username": "nonexistent", "password": "password"}
     )
 
     assert response.status_code == 401
@@ -55,8 +50,8 @@ def test_signup_creates_new_user(client):
         json={
             "username": "newuser",
             "email": "newuser@example.com",
-            "password": "newpass123"
-        }
+            "password": "newpass123",
+        },
     )
 
     assert response.status_code == 200
@@ -73,8 +68,8 @@ def test_signup_with_duplicate_username(client):
         json={
             "username": "user1",
             "email": "different@example.com",
-            "password": "password123"
-        }
+            "password": "password123",
+        },
     )
 
     assert response.status_code == 400
@@ -88,8 +83,8 @@ def test_signup_with_invalid_email(client):
         json={
             "username": "emailtest",
             "email": "invalidemail",
-            "password": "password123"
-        }
+            "password": "password123",
+        },
     )
 
     assert response.status_code == 400
@@ -100,11 +95,7 @@ def test_signup_with_short_password(client):
     """Signup with short password returns 400."""
     response = client.post(
         "/signup",
-        json={
-            "username": "passtest",
-            "email": "pass@example.com",
-            "password": "short"
-        }
+        json={"username": "passtest", "email": "pass@example.com", "password": "short"},
     )
 
     assert response.status_code == 400
@@ -115,16 +106,12 @@ def test_protected_route_with_valid_token(client):
     """Protected route with valid token returns user data."""
     # First login to get token
     login_response = client.post(
-        "/login",
-        data={"username": "user1", "password": "password123"}
+        "/login", data={"username": "user1", "password": "password123"}
     )
     token = login_response.json()["access_token"]
 
     # Access protected route
-    response = client.get(
-        "/protected",
-        headers={"Authorization": f"Bearer {token}"}
-    )
+    response = client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     assert response.json()["username"] == "user1"
@@ -141,8 +128,7 @@ def test_protected_route_without_token(client):
 def test_protected_route_with_invalid_token(client):
     """Protected route with invalid token returns 401."""
     response = client.get(
-        "/protected",
-        headers={"Authorization": "Bearer invalid-token"}
+        "/protected", headers={"Authorization": "Bearer invalid-token"}
     )
 
     assert response.status_code == 401
@@ -152,16 +138,12 @@ def test_user_profile_endpoint(client):
     """User profile endpoint returns authenticated user info."""
     # Login
     login_response = client.post(
-        "/login",
-        data={"username": "user2", "password": "securepass456"}
+        "/login", data={"username": "user2", "password": "securepass456"}
     )
     token = login_response.json()["access_token"]
 
     # Get profile
-    response = client.get(
-        "/user/profile",
-        headers={"Authorization": f"Bearer {token}"}
-    )
+    response = client.get("/user/profile", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     profile = response.json()

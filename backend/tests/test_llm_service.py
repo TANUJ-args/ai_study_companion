@@ -12,14 +12,14 @@ def test_safe_parse_json_parses_plain_json():
 
 
 def test_safe_parse_json_parses_fenced_json():
-    raw = "```json\n{\"questions\": []}\n```"
+    raw = '```json\n{"questions": []}\n```'
     parsed = safe_parse_json(raw)
 
     assert parsed == {"questions": []}
 
 
 def test_safe_parse_json_parses_embedded_json_block():
-    raw = "text before {\"questions\": []} text after"
+    raw = 'text before {"questions": []} text after'
     parsed = safe_parse_json(raw)
 
     assert parsed == {"questions": []}

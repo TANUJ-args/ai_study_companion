@@ -30,7 +30,7 @@ def test_root_endpoint_includes_all_routes(client):
 
     data = response.json()
     endpoints = data["endpoints"]
-    
+
     # Check major routes are documented
     assert any("signup" in str(v).lower() for v in endpoints.values())
     assert any("login" in str(v).lower() for v in endpoints.values())
