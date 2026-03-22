@@ -1,0 +1,37 @@
+"""FastAPI application bootstrap and router registration."""
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.routes.auth_routes import router as auth_router
+from app.api.routes.chat_routes import router as chat_router
+from app.api.routes.memory_routes import router as memory_router
+from app.api.routes.system_routes import router as system_router
+
+
+def create_app() -> FastAPI:
+    """Create and configure the FastAPI application instance."""
+
+    app = FastAPI(
+        title="JWT Authentication System",
+        description="FastAPI with JWT token-based authentication",
+        version="1.0.0",
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    app.include_router(auth_router)
+    app.include_router(chat_router)
+    app.include_router(memory_router)
+    app.include_router(system_router)
+
+    return app
+
+
+app = create_app()

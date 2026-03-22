@@ -9,17 +9,21 @@ A complete JWT-based authentication system built with FastAPI, featuring secure 
 ✅ **Password Hashing** - Bcrypt-based password hashing with passlib  
 ✅ **Protected Routes** - OAuth2 password bearer security scheme  
 ✅ **Error Handling** - Proper HTTP 401 responses for invalid credentials  
-✅ **Clean Code** - Well-structured, documented, and maintainable code  
+✅ **Clean Code** - Well-structured, documented, and maintainable code
 
 ## Installation
 
-1. **Create a virtual environment** (optional but recommended):
+1. **Create a virtual environment at repo root** (optional but recommended):
+
 ```bash
-python -m venv venv
-venv\Scripts\activate  # On Windows
+cd ..
+python -m venv .venv
+.venv\Scripts\activate  # On Windows
+cd backend
 ```
 
 2. **Install dependencies**:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -27,20 +31,31 @@ pip install -r requirements.txt
 ## Running the Application
 
 Start the development server:
+
 ```bash
 python main.py
 ```
 
 Or using uvicorn directly:
+
 ```bash
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 The API will be available at `http://localhost:8000`
 
+## Running Unit Tests
+
+From the repository root:
+
+```bash
+.venv\Scripts\python.exe -m pytest backend\tests -q
+```
+
 ## API Documentation
 
 ### Interactive Documentation
+
 Access the interactive Swagger UI at: `http://localhost:8000/docs`
 
 ## Test Credentials
@@ -62,9 +77,11 @@ Password: securepass456
 ## API Endpoints
 
 ### 1. Sign Up Endpoint
+
 **POST** `/signup`
 
 Request (JSON):
+
 ```json
 {
   "username": "newuser",
@@ -74,6 +91,7 @@ Request (JSON):
 ```
 
 Response:
+
 ```json
 {
   "message": "User registered successfully",
@@ -84,24 +102,29 @@ Response:
 ```
 
 **Validation Rules:**
+
 - Username: 3-20 characters, must be unique
 - Email: Valid email format, must be unique
 - Password: Minimum 6 characters
 
 **Error Responses:**
+
 - `400 Bad Request` - Username/email already exists, invalid format, or password too short
 - Example: `{"detail": "Username already exists"}`
 
 ### 2. Login Endpoint
+
 **POST** `/login`
 
 Request (form-data):
+
 ```
 username: user1
 password: password123
 ```
 
 Response:
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -110,14 +133,17 @@ Response:
 ```
 
 ### 3. Protected Route
+
 **GET** `/protected`
 
 Headers:
+
 ```
 Authorization: Bearer <access_token>
 ```
 
 Response:
+
 ```json
 {
   "message": "Hello, John Doe!",
@@ -127,14 +153,17 @@ Response:
 ```
 
 ### 4. Get User Profile
+
 **GET** `/user/profile`
 
 Headers:
+
 ```
 Authorization: Bearer <access_token>
 ```
 
 Response:
+
 ```json
 {
   "username": "user1",
@@ -145,9 +174,11 @@ Response:
 ```
 
 ### 5. API Info
+
 **GET** `/`
 
 Response:
+
 ```json
 {
   "message": "JWT Authentication API",
@@ -161,36 +192,53 @@ Response:
 
 ```
 .
-├── main.py              # FastAPI application and routes
-├── auth.py              # Authentication utilities
-├── requirements.txt     # Project dependencies
-└── README.md           # This file
+├── app/
+│   ├── main.py                  # FastAPI app bootstrap
+│   ├── api/
+│   │   ├── deps.py              # Shared dependencies (auth, fake DB)
+│   │   └── routes/
+│   │       ├── auth_routes.py   # /login, /signup, /protected, /user/profile
+│   │       ├── chat_routes.py   # /chat, /generate-question
+│   │       ├── memory_routes.py # /store-memory*, /weak-topics, /mistakes, /insights
+│   │       └── system_routes.py # /
+│   ├── core/
+│   │   ├── config.py            # Env/config constants
+│   │   └── security.py          # JWT and password helpers
+│   ├── schemas/                 # Pydantic request/response models
+│   └── services/
+│       ├── llm_service.py       # Groq client and quiz generation
+│       └── memory_service.py    # Hindsight storage and insights
+├── main.py                      # Entrypoint for local execution
+├── requirements.txt             # Project dependencies
+├── test_api.py                  # API smoke test script
+└── README.md                    # This file
 ```
 
 ## Code Components
 
-### auth.py
-Contains all authentication logic:
+### app/core/security.py
+
+Contains JWT and password helpers:
+
 - `hash_password()` - Hash passwords using bcrypt
 - `verify_password()` - Verify password against hash
 - `create_access_token()` - Generate JWT token with 30-minute expiry
 - `decode_token()` - Validate and decode JWT token
-- `Token` - Pydantic model for token response
-- `TokenData` - Pydantic model for token payload
 
-### main.py
-FastAPI application with:
-- In-memory user database (fake data for demo)
-- `/login` endpoint for authentication
-- `/protected` protected route requiring token
-- `/user/profile` user profile endpoint
-- `get_current_user()` dependency for token validation
-- OAuth2PasswordBearer security scheme
+### app/main.py
+
+FastAPI application bootstrap with modular routers:
+
+- `auth_routes.py` for authentication and protected endpoints
+- `chat_routes.py` for AI chat and quiz generation
+- `memory_routes.py` for Hindsight-backed learning insights
+- `system_routes.py` for service metadata
 
 ## Security Notes
 
 ⚠️ **Production Deployment:**
-1. Change `SECRET_KEY` in `auth.py` to a strong, secret value
+
+1. Change `SECRET_KEY` in `app/core/config.py` to a strong, secret value
 2. Use environment variables for sensitive config
 3. Replace in-memory database with a real database
 4. Enable HTTPS/TLS in production
@@ -200,6 +248,7 @@ FastAPI application with:
 ## Testing with cURL
 
 ### Sign Up (Register New User):
+
 ```bash
 curl -X POST "http://localhost:8000/signup" \
   -H "Content-Type: application/json" \
@@ -207,6 +256,7 @@ curl -X POST "http://localhost:8000/signup" \
 ```
 
 ### Login:
+
 ```bash
 curl -X POST "http://localhost:8000/login" \
   -H "Content-Type: application/x-www-form-urlencoded" \
@@ -214,6 +264,7 @@ curl -X POST "http://localhost:8000/login" \
 ```
 
 ### Access Protected Route:
+
 ```bash
 curl -X GET "http://localhost:8000/protected" \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
@@ -222,6 +273,7 @@ curl -X GET "http://localhost:8000/protected" \
 ## Error Responses
 
 When credentials are invalid or token is expired:
+
 ```
 Status Code: 401 Unauthorized
 
@@ -231,6 +283,7 @@ Status Code: 401 Unauthorized
 ```
 
 Or for invalid tokens:
+
 ```
 Status Code: 401 Unauthorized
 
@@ -255,6 +308,7 @@ MIT
 ## Support
 
 For issues or questions, refer to the official documentation:
+
 - FastAPI: https://fastapi.tiangolo.com/
 - python-jose: https://github.com/mpdavis/python-jose
 - passlib: https://passlib.readthedocs.io/

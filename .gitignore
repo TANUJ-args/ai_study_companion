@@ -74,6 +74,7 @@ MANIFEST
 venv/
 env/
 ENV/
+backend/env/
 env.bak/
 venv.bak/
 .virtualenv/
