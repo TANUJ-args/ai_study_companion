@@ -20,3 +20,9 @@ HINDSIGHT_BASE_URL = os.getenv(
     "HINDSIGHT_BASE_URL", "https://api.hindsight.vectorize.io"
 )
 HINDSIGHT_COLLECTION_NAME = os.getenv("HINDSIGHT_COLLECTION_NAME", "study_memory")
+
+# Database configuration
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://user:password@localhost:5432/ai_study_companion",
+)

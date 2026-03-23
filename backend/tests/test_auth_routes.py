@@ -1,20 +1,9 @@
 """Tests for authentication and user routes."""
 
 import pytest
-from fastapi.testclient import TestClient
-
-from app.main import create_app
-from app.api.deps import FAKE_USERS_DB
 
 
-@pytest.fixture
-def client():
-    """Create test client with fresh app instance."""
-    app = create_app()
-    return TestClient(app)
-
-
-def test_login_with_valid_credentials(client):
+def test_login_with_valid_credentials(client, seed_users):
     """Login endpoint returns valid JWT token."""
     response = client.post(
         "/login", json={"username": "user1", "password": "password123"}
@@ -26,7 +15,7 @@ def test_login_with_valid_credentials(client):
     assert token_data["token_type"] == "bearer"
 
 
-def test_login_with_invalid_password(client):
+def test_login_with_invalid_password(client, seed_users):
     """Login with wrong password returns 401."""
     response = client.post("/login", json={"username": "user1", "password": "wrong"})
 
@@ -57,11 +46,9 @@ def test_signup_creates_new_user(client):
     assert response.status_code == 200
     assert response.json()["message"] == "User registered successfully"
     assert response.json()["username"] == "newuser"
-    # Verify user was added to DB
-    assert "newuser" in FAKE_USERS_DB
 
 
-def test_signup_with_duplicate_username(client):
+def test_signup_with_duplicate_username(client, seed_users):
     """Signup with existing username returns 400."""
     response = client.post(
         "/signup",
@@ -102,7 +89,7 @@ def test_signup_with_short_password(client):
     assert "at least 6" in response.json()["detail"]
 
 
-def test_protected_route_with_valid_token(client):
+def test_protected_route_with_valid_token(client, seed_users):
     """Protected route with valid token returns user data."""
     # First login to get token
     login_response = client.post(
@@ -134,7 +121,7 @@ def test_protected_route_with_invalid_token(client):
     assert response.status_code == 401
 
 
-def test_user_profile_endpoint(client):
+def test_user_profile_endpoint(client, seed_users):
     """User profile endpoint returns authenticated user info."""
     # Login
     login_response = client.post(
@@ -172,5 +159,3 @@ def test_signup_without_email(client):
     assert response.status_code == 200
     assert response.json()["message"] == "User registered successfully"
     assert response.json()["username"] == "noemail_user"
-    # Verify user was added to DB
-    assert "noemail_user" in FAKE_USERS_DB

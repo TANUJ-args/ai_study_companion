@@ -39,8 +39,4 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> TokenData:
     if token_data is None:
         raise credential_exception
 
-    user = FAKE_USERS_DB.get(token_data.username)
-    if user is None:
-        raise credential_exception
-
     return token_data
