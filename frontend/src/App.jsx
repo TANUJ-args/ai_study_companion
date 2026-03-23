@@ -1,15 +1,24 @@
-import React from 'react';
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext';
-import { AppStateProvider, useAppState } from './context/AppStateContext';
-import Login from './components/Login';
-import Register from './components/Register';
-import Dashboard from './components/Dashboard';
-import Quiz from './components/Quiz';
-import Layout from './components/Layout';
-import Chatbot from './components/Chatbot';
-import ReportPage from './components/ReportPage';
-import Flashcards from './components/Flashcards';
+import React from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+} from "react-router-dom";
+import { ThemeProvider } from "./context/ThemeContext";
+import { AppStateProvider, useAppState } from "./context/AppStateContext";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Quiz from "./pages/Quiz";
+import Layout from "./layout/Layout";
+import AIChat from "./pages/AIChat";
+import ExamMode from "./pages/ExamMode";
+import Profile from "./pages/Profile";
+import ReportPage from "./pages/ReportPage";
+import Flashcards from "./pages/Flashcards";
+import LandingPage from "./pages/LandingPage";
 
 const ProtectedRoutes = () => {
   const { userName } = useAppState();
@@ -43,16 +52,20 @@ function App() {
       <AppStateProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LoginRoute />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/landing" element={<LandingPage />} />
+            <Route path="/login" element={<LoginRoute />} />
             <Route path="/register" element={<RegisterRoute />} />
 
             <Route element={<ProtectedRoutes />}>
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/quiz" element={<Quiz />} />
-                <Route path="/chat" element={<Chatbot />} />
+                <Route path="/exam" element={<ExamMode />} />
+                <Route path="/chat" element={<AIChat />} />
                 <Route path="/report" element={<ReportPage />} />
                 <Route path="/flashcards" element={<Flashcards />} />
+                <Route path="/profile" element={<Profile />} />
               </Route>
             </Route>
 

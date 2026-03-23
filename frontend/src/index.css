@@ -12,58 +12,75 @@
 
 @layer base {
   :root {
-    --bg: #0F172A;
-    --card: #1E293B;
-    --primary: #2563EB;
-    --secondary: #0F766E;
-    --accent: #64748B;
-    --text-primary: #E2E8F0;
-    --text-secondary: #94A3B8;
+    --bg: #26104f;
+    --card: #35176d;
+    --primary: #8f63f9;
+    --secondary: #ff7a3d;
+    --accent: #cdb8ff;
+    --text-primary: #f7f2ff;
+    --text-secondary: #d7c9f8;
+    --cta: #10b981;
+    --cta-hover: #059669;
+    --cta-glow: 0 0 20px rgba(16, 185, 129, 0.45);
   }
 
   .theme-cyber-dark {
-    --bg: #0F172A;
-    --card: #1E293B;
-    --primary: #2563EB;
-    --secondary: #0F766E;
-    --accent: #64748B;
-    --text-primary: #E2E8F0;
-    --text-secondary: #94A3B8;
+    --bg: #26104f;
+    --card: #35176d;
+    --primary: #8f63f9;
+    --secondary: #ff7a3d;
+    --accent: #cdb8ff;
+    --text-primary: #f7f2ff;
+    --text-secondary: #d7c9f8;
+    --cta: #10b981;
+    --cta-hover: #059669;
+    --cta-glow: 0 0 20px rgba(16, 185, 129, 0.45);
   }
 
   .theme-cyber-light {
-    --bg: #F8FAFC;
-    --card: #FFFFFF;
-    --primary: #2563EB;
-    --secondary: #0F766E;
-    --accent: #475569;
-    --text-primary: #0F172A;
-    --text-secondary: #475569;
+    --bg: #fffaff;
+    --card: #ffffff;
+    --primary: #7a4ae2;
+    --secondary: #ff7a3d;
+    --accent: #dfcdfd;
+    --text-primary: #2d145f;
+    --text-secondary: #6a44b8;
+    --cta: #10b981;
+    --cta-hover: #059669;
+    --cta-glow: 0 0 20px rgba(16, 185, 129, 0.38);
   }
 
   .theme-stream-dark {
-    --bg: #111827;
-    --card: #1F2937;
-    --primary: #0EA5E9;
-    --secondary: #0284C7;
-    --accent: #64748B;
-    --text-primary: #F1F5F9;
-    --text-secondary: #94A3B8;
+    --bg: #200a43;
+    --card: #311261;
+    --primary: #a37eff;
+    --secondary: #ff8e4d;
+    --accent: #ceb7ff;
+    --text-primary: #fbf8ff;
+    --text-secondary: #d8caf9;
+    --cta: #10b981;
+    --cta-hover: #059669;
+    --cta-glow: 0 0 20px rgba(16, 185, 129, 0.45);
   }
 
   .theme-stream-light {
-    --bg: #F3F4F6;
-    --card: #FFFFFF;
-    --primary: #0EA5E9;
-    --secondary: #0369A1;
-    --accent: #475569;
-    --text-primary: #1F2937;
-    --text-secondary: #6B7280;
+    --bg: #fff8fe;
+    --card: #ffffff;
+    --primary: #7444d8;
+    --secondary: #ff7b33;
+    --accent: #e3d3ff;
+    --text-primary: #2c145e;
+    --text-secondary: #6645ae;
+    --cta: #10b981;
+    --cta-hover: #059669;
+    --cta-glow: 0 0 20px rgba(16, 185, 129, 0.32);
   }
 
   body {
     background-color: var(--bg);
     color: var(--text-primary);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
 }
