@@ -4,6 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import create_app
+import app.api.routes.chat_routes as chat_routes
 
 
 @pytest.fixture
@@ -81,3 +82,138 @@ def test_generate_question_response_structure(client):
             assert "difficulty" in data
             assert "batch_size" in data
             assert "questions" in data
+
+
+def test_generate_question_applies_recommendation_when_user_memory_exists(
+    client, monkeypatch
+):
+    """Generate question uses top recommendation to select topic and difficulty."""
+
+    async def fake_get_memories(_user_id: str):
+        return [{"topic": "Algebra", "score": 30, "timestamp": "2026-01-01T10:00:00"}]
+
+    def fake_recommend_topics(_memories, limit=1):
+        return [
+            {
+                "topic": "Geometry",
+                "recommended_difficulty": "Easy",
+                "reason": "Low mastery",
+            }
+        ]
+
+    captured = {}
+
+    def fake_generate_quiz_questions(
+        topic: str, difficulty: str = "medium", count: int = 2
+    ):
+        captured["topic"] = topic
+        captured["difficulty"] = difficulty
+        captured["count"] = count
+        return {
+            "questions": [
+                {
+                    "question": "Q1",
+                    "options": ["a", "b", "c", "d"],
+                    "correct_option_index": 0,
+                    "explanation": "E1",
+                },
+                {
+                    "question": "Q2",
+                    "options": ["a", "b", "c", "d"],
+                    "correct_option_index": 1,
+                    "explanation": "E2",
+                },
+            ]
+        }
+
+    monkeypatch.setattr(chat_routes, "get_memories", fake_get_memories)
+    monkeypatch.setattr(chat_routes, "recommend_topics", fake_recommend_topics)
+    monkeypatch.setattr(
+        chat_routes, "generate_quiz_questions", fake_generate_quiz_questions
+    )
+
+    response = client.post(
+        "/generate-question",
+        json={
+            "topic": "Original Topic",
+            "difficulty": "hard",
+            "question_count": 2,
+            "user_id": "user1",
+            "use_recommendations": True,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert captured["topic"] == "Geometry"
+    assert captured["difficulty"] == "easy"
+    assert body["topic"] == "Geometry"
+    assert body["difficulty"] == "easy"
+    assert body["recommendation_applied"] is True
+    assert body["recommendation_reason"] == "Low mastery"
+
+
+def test_generate_question_uses_requested_topic_when_recommendations_disabled(
+    client, monkeypatch
+):
+    """Generate question keeps explicit topic when recommendation mode is disabled."""
+
+    async def fake_get_memories(_user_id: str):
+        return [{"topic": "Algebra", "score": 30, "timestamp": "2026-01-01T10:00:00"}]
+
+    def fake_recommend_topics(_memories, limit=1):
+        return [
+            {
+                "topic": "Geometry",
+                "recommended_difficulty": "Easy",
+                "reason": "Low mastery",
+            }
+        ]
+
+    captured = {}
+
+    def fake_generate_quiz_questions(
+        topic: str, difficulty: str = "medium", count: int = 2
+    ):
+        captured["topic"] = topic
+        captured["difficulty"] = difficulty
+        return {
+            "questions": [
+                {
+                    "question": "Q1",
+                    "options": ["a", "b", "c", "d"],
+                    "correct_option_index": 0,
+                    "explanation": "E1",
+                },
+                {
+                    "question": "Q2",
+                    "options": ["a", "b", "c", "d"],
+                    "correct_option_index": 1,
+                    "explanation": "E2",
+                },
+            ]
+        }
+
+    monkeypatch.setattr(chat_routes, "get_memories", fake_get_memories)
+    monkeypatch.setattr(chat_routes, "recommend_topics", fake_recommend_topics)
+    monkeypatch.setattr(
+        chat_routes, "generate_quiz_questions", fake_generate_quiz_questions
+    )
+
+    response = client.post(
+        "/generate-question",
+        json={
+            "topic": "Original Topic",
+            "difficulty": "hard",
+            "question_count": 2,
+            "user_id": "user1",
+            "use_recommendations": False,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert captured["topic"] == "Original Topic"
+    assert captured["difficulty"] == "hard"
+    assert body["recommendation_applied"] is False
+    assert body["recommendation_reason"] is None

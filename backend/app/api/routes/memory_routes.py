@@ -2,11 +2,12 @@
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.schemas.memory import StoreMemoryBatchRequest
+from app.schemas.memory import StoreMemoryBatchRequest, StoreMemoryRequest
 from app.services.memory_service import (
     calculate_insights,
     filter_weak_topics,
     get_memories,
+    recommend_topics,
     store_memory,
 )
 
@@ -19,13 +20,21 @@ async def store_memory_batch(payload: StoreMemoryBatchRequest):
 
     stored_count = 0
     for attempt in payload.attempts:
-        success = store_memory(
+        success = await store_memory(
             {
                 "user_id": payload.user_id.strip(),
                 "topic": attempt.topic,
                 "mistake_type": attempt.mistake_type,
                 "difficulty": attempt.difficulty,
                 "score": attempt.score,
+                "question_id": attempt.question_id,
+                "subtopic": attempt.subtopic,
+                "confidence": attempt.confidence,
+                "time_spent_seconds": attempt.time_spent_seconds,
+                "source": attempt.source,
+                "session_id": attempt.session_id,
+                "user_answer": attempt.user_answer,
+                "correct_answer": attempt.correct_answer,
             }
         )
         if success:
@@ -45,29 +54,10 @@ async def store_memory_batch(payload: StoreMemoryBatchRequest):
 
 
 @router.post("/store-memory")
-async def store_quiz_memory(quiz_data: dict):
+async def store_quiz_memory(quiz_data: StoreMemoryRequest):
     """Store one quiz attempt for later insight generation."""
 
-    required_fields = ["user_id", "topic", "mistake_type", "difficulty", "score"]
-    missing_fields = [field for field in required_fields if field not in quiz_data]
-
-    if missing_fields:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Missing required fields: {', '.join(missing_fields)}",
-        )
-
-    if (
-        not isinstance(quiz_data["score"], int)
-        or quiz_data["score"] < 0
-        or quiz_data["score"] > 100
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Score must be an integer between 0 and 100",
-        )
-
-    success = store_memory(quiz_data)
+    success = await store_memory(quiz_data.model_dump())
 
     if success:
         return {"message": "Quiz memory stored successfully", "status": "success"}
@@ -88,7 +78,7 @@ async def get_weak_topics(user_id: str):
             detail="user_id cannot be empty",
         )
 
-    memories = get_memories(user_id)
+    memories = await get_memories(user_id)
     if not memories:
         return {
             "user_id": user_id,
@@ -110,7 +100,7 @@ async def get_past_mistakes(user_id: str):
             detail="user_id cannot be empty",
         )
 
-    memories = get_memories(user_id)
+    memories = await get_memories(user_id)
     if not memories:
         return {
             "user_id": user_id,
@@ -144,7 +134,7 @@ async def get_learning_insights(user_id: str):
             detail="user_id cannot be empty",
         )
 
-    memories = get_memories(user_id)
+    memories = await get_memories(user_id)
     if not memories:
         return {
             "user_id": user_id,
@@ -158,3 +148,29 @@ async def get_learning_insights(user_id: str):
 
     insights = calculate_insights(memories)
     return {"user_id": user_id, "insights": insights, "total_records": len(memories)}
+
+
+@router.get("/recommendations/{user_id}")
+async def get_topic_recommendations(user_id: str):
+    """Return prioritized next topics and actions based on learning memory."""
+
+    if not user_id or not user_id.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="user_id cannot be empty",
+        )
+
+    memories = await get_memories(user_id)
+    if not memories:
+        return {
+            "user_id": user_id,
+            "recommendations": [],
+            "message": "No quiz records found for this user",
+        }
+
+    recommendations = recommend_topics(memories)
+    return {
+        "user_id": user_id,
+        "recommendations": recommendations,
+        "total_records": len(memories),
+    }

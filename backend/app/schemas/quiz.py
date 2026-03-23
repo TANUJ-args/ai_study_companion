@@ -11,6 +11,8 @@ class GenerateQuestionRequest(BaseModel):
     topic: str = Field(min_length=1, max_length=120)
     difficulty: Literal["easy", "medium", "hard"] = "medium"
     question_count: int = Field(default=2, ge=2, le=2)
+    user_id: str | None = Field(default=None, min_length=1)
+    use_recommendations: bool = True
 
 
 class QuizQuestionItem(BaseModel):
@@ -45,6 +47,8 @@ class GenerateQuestionResponse(BaseModel):
     difficulty: Literal["easy", "medium", "hard"]
     batch_size: int
     questions: list[QuizQuestionItem]
+    recommendation_applied: bool = False
+    recommendation_reason: str | None = None
 
     @field_validator("questions")
     @classmethod

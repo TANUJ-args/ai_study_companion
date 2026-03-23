@@ -36,8 +36,7 @@ def test_store_memory_with_missing_fields(client):
         "/store-memory", json={"user_id": "user1", "topic": "Algebra"}
     )
 
-    assert response.status_code == 400
-    assert "Missing required fields" in response.json()["detail"]
+    assert response.status_code == 422
 
 
 def test_store_memory_with_invalid_score(client):
@@ -53,8 +52,7 @@ def test_store_memory_with_invalid_score(client):
         },
     )
 
-    assert response.status_code == 400
-    assert "between 0 and 100" in response.json()["detail"]
+    assert response.status_code == 422
 
 
 def test_store_memory_batch_with_valid_payload(client):
@@ -158,3 +156,14 @@ def test_insights_with_valid_user_id(client):
     assert "insights" in data
     assert "weak_topics" in data["insights"]
     assert "strong_topics" in data["insights"]
+
+
+def test_recommendations_with_valid_user_id(client):
+    """Recommendations endpoint returns expected structure."""
+    response = client.get("/recommendations/user1")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "user_id" in data
+    assert "recommendations" in data
+    assert isinstance(data["recommendations"], list)

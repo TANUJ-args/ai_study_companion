@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, status
 from app.schemas.chat import ChatRequest
 from app.schemas.quiz import GenerateQuestionRequest, GenerateQuestionResponse
 from app.services.llm_service import ask_llm, generate_quiz_questions
+from app.services.memory_service import get_memories, recommend_topics
 
 router = APIRouter()
 
@@ -34,17 +35,43 @@ async def generate_question(payload: GenerateQuestionRequest):
     """Generate two MCQs for a given topic and difficulty."""
 
     try:
+        topic = payload.topic.strip()
+        difficulty = payload.difficulty
+        recommendation_applied = False
+        recommendation_reason = None
+
+        if payload.user_id and payload.use_recommendations:
+            memories = await get_memories(payload.user_id.strip())
+            recommendations = recommend_topics(memories, limit=1)
+            if recommendations:
+                top_pick = recommendations[0]
+                recommended_topic = (top_pick.get("topic") or "").strip()
+                recommended_difficulty = (
+                    (top_pick.get("recommended_difficulty") or "").strip().lower()
+                )
+
+                if recommended_topic:
+                    topic = recommended_topic
+
+                if recommended_difficulty in {"easy", "medium", "hard"}:
+                    difficulty = recommended_difficulty
+
+                recommendation_applied = True
+                recommendation_reason = top_pick.get("reason")
+
         question_data = generate_quiz_questions(
-            topic=payload.topic.strip(),
-            difficulty=payload.difficulty,
+            topic=topic,
+            difficulty=difficulty,
             count=payload.question_count,
         )
         return GenerateQuestionResponse.model_validate(
             {
-                "topic": payload.topic.strip(),
-                "difficulty": payload.difficulty,
+                "topic": topic,
+                "difficulty": difficulty,
                 "batch_size": payload.question_count,
                 "questions": question_data.get("questions", []),
+                "recommendation_applied": recommendation_applied,
+                "recommendation_reason": recommendation_reason,
             }
         )
     except RuntimeError as exc:
