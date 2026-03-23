@@ -18,11 +18,18 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
+class LoginRequest(BaseModel):
+    """JSON login request body."""
+
+    username: str
+    password: str
+
+
 class UserCreate(BaseModel):
     """User registration request body."""
 
     username: str
-    email: str
+    email: Optional[str] = None
     password: str
 
 

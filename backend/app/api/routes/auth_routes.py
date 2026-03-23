@@ -3,23 +3,22 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.deps import FAKE_USERS_DB, get_current_user
 from app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from app.core.security import create_access_token, hash_password, verify_password
-from app.schemas.auth import Token, TokenData, UserCreate
+from app.schemas.auth import LoginRequest, Token, TokenData, UserCreate
 
 router = APIRouter()
 
 
 @router.post("/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    """Authenticate user and return a JWT token."""
+async def login(credentials: LoginRequest):
+    """Authenticate user via JSON credentials and return a JWT token."""
 
-    user = FAKE_USERS_DB.get(form_data.username)
+    user = FAKE_USERS_DB.get(credentials.username)
 
-    if not user or not verify_password(form_data.password, user["hashed_password"]):
+    if not user or not verify_password(credentials.password, user["hashed_password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -61,19 +60,19 @@ async def signup(user_data: UserCreate):
             detail="Username already exists",
         )
 
-    if not user_data.email or "@" not in user_data.email or "." not in user_data.email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid email address",
-        )
-
-    if any(
-        u["email"].lower() == user_data.email.lower() for u in FAKE_USERS_DB.values()
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered",
-        )
+    if user_data.email:
+        if "@" not in user_data.email or "." not in user_data.email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid email address",
+            )
+        if any(
+            u["email"].lower() == user_data.email.lower() for u in FAKE_USERS_DB.values() if u.get("email")
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered",
+            )
 
     if not user_data.password or len(user_data.password) < 6:
         raise HTTPException(
@@ -85,7 +84,7 @@ async def signup(user_data: UserCreate):
     FAKE_USERS_DB[user_data.username] = {
         "username": user_data.username,
         "full_name": user_data.username.title(),
-        "email": user_data.email,
+        "email": user_data.email or "",
         "hashed_password": hashed_password,
         "disabled": False,
     }
@@ -93,7 +92,7 @@ async def signup(user_data: UserCreate):
     return {
         "message": "User registered successfully",
         "username": user_data.username,
-        "email": user_data.email,
+        "email": user_data.email or "",
         "status": "active",
     }
 

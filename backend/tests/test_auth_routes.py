@@ -17,7 +17,7 @@ def client():
 def test_login_with_valid_credentials(client):
     """Login endpoint returns valid JWT token."""
     response = client.post(
-        "/login", data={"username": "user1", "password": "password123"}
+        "/login", json={"username": "user1", "password": "password123"}
     )
 
     assert response.status_code == 200
@@ -28,7 +28,7 @@ def test_login_with_valid_credentials(client):
 
 def test_login_with_invalid_password(client):
     """Login with wrong password returns 401."""
-    response = client.post("/login", data={"username": "user1", "password": "wrong"})
+    response = client.post("/login", json={"username": "user1", "password": "wrong"})
 
     assert response.status_code == 401
     assert "Incorrect" in response.json()["detail"]
@@ -37,7 +37,7 @@ def test_login_with_invalid_password(client):
 def test_login_with_nonexistent_user(client):
     """Login with nonexistent username returns 401."""
     response = client.post(
-        "/login", data={"username": "nonexistent", "password": "password"}
+        "/login", json={"username": "nonexistent", "password": "password"}
     )
 
     assert response.status_code == 401
@@ -106,7 +106,7 @@ def test_protected_route_with_valid_token(client):
     """Protected route with valid token returns user data."""
     # First login to get token
     login_response = client.post(
-        "/login", data={"username": "user1", "password": "password123"}
+        "/login", json={"username": "user1", "password": "password123"}
     )
     token = login_response.json()["access_token"]
 
@@ -138,7 +138,7 @@ def test_user_profile_endpoint(client):
     """User profile endpoint returns authenticated user info."""
     # Login
     login_response = client.post(
-        "/login", data={"username": "user2", "password": "securepass456"}
+        "/login", json={"username": "user2", "password": "securepass456"}
     )
     token = login_response.json()["access_token"]
 
@@ -157,3 +157,20 @@ def test_user_profile_without_token(client):
     response = client.get("/user/profile")
 
     assert response.status_code == 401
+
+
+def test_signup_without_email(client):
+    """Signup without email should work (email is optional)."""
+    response = client.post(
+        "/signup",
+        json={
+            "username": "noemail_user",
+            "password": "password123",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["message"] == "User registered successfully"
+    assert response.json()["username"] == "noemail_user"
+    # Verify user was added to DB
+    assert "noemail_user" in FAKE_USERS_DB
