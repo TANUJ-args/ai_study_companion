@@ -109,7 +109,9 @@ const Sidebar = () => {
                 <p className="font-semibold text-slate-800 text-sm truncate">
                   {userName || "Learner"}
                 </p>
-                <p className="text-[11px] text-slate-500 truncate">{userEmail}</p>
+                <p className="text-[11px] text-slate-500 truncate">
+                  {userEmail}
+                </p>
               </div>
             </>
           )}
