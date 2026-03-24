@@ -28,6 +28,7 @@ const iconBoxClass =
 const Sidebar = () => {
   const { logout, userName } = useAppState();
   const navigate = useNavigate();
+  const userEmail = `${(userName || "learner").replace(/\s+/g, "").toLowerCase()}@aitutor.app`;
 
   const handleLogout = () => {
     logout();
@@ -108,7 +109,7 @@ const Sidebar = () => {
                 <p className="font-semibold text-slate-800 text-sm truncate">
                   {userName || "Learner"}
                 </p>
-                <p className="text-[11px] text-slate-500">Learner Mode</p>
+                <p className="text-[11px] text-slate-500 truncate">{userEmail}</p>
               </div>
             </>
           )}
